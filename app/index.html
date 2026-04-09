@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SecureShare Lite</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="container">
+  <h1>🔒 SecureShare Lite</h1>
+  <p class="subtitle">Encrypt your message in the browser. No account needed.</p>
+
+  <label for="message">Your message</label>
+  <textarea id="message" placeholder="Type a password, private note, or sensitive text..."></textarea>
+
+  <div class="row">
+    <div>
+      <label for="expire">Expires after</label>
+      <select id="expire">
+        <option>1 hour</option>
+        <option selected>24 hours</option>
+        <option>7 days</option>
+      </select>
+    </div>
+    <div>
+      <label for="views">Max views</label>
+      <select id="views">
+        <option>1 view</option>
+        <option selected>3 views</option>
+        <option>10 views</option>
+      </select>
+    </div>
+  </div>
+
+  <button>Encrypt &amp; Generate Link</button>
+
+  <div class="result">
+    <h2>Your encrypted message is ready!</h2>
+
+    <div class="result-label">Shareable Link</div>
+    <div class="result-value">https://secureshare.app/m/abc123xyz</div>
+    <button class="copy-btn">Copy Link</button>
+
+    <div class="result-label">Decryption Key (share separately!)</div>
+    <div class="result-value">aB3kR7mNpQvXwZdL9eTgYs2j</div>
+    <button class="copy-btn">Copy Key</button>
+
+    <div class="warning">
+      ⚠️ Send the <strong>link</strong> and <strong>key</strong> through different channels for security.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
