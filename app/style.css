@@ -135,3 +135,37 @@ button:hover {
   border-radius: 6px;
   padding: 10px;
 }
+.decrypt-section {
+  margin-top: 24px;
+  background: #f9f9f9;
+  border: 1px solid #d8d8d8;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.decrypt-section h2 {
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.decrypt-text {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 14px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  margin-bottom: 14px;
+}
+
+.decrypted-output {
+  margin-top: 16px;
+  display: none;
+}
