@@ -34,7 +34,7 @@
     </div>
   </div>
 
-  <button>Encrypt &amp; Generate Link</button>
+  <button id="encryptBtn">Encrypt &amp; Generate Link</button>
 
   <div class="result">
     <h2>Your encrypted message is ready!</h2>
@@ -49,6 +49,24 @@
 
     <div class="warning">
       ⚠️ Send the <strong>link</strong> and <strong>key</strong> through different channels for security.
+    </div>
+  </div>
+
+  <div class="decrypt-section">
+    <h2>Decrypt a Message</h2>
+    <p class="decrypt-text">Paste the encrypted message link and enter the decryption key.</p>
+
+    <label for="decryptLink">Encrypted message link</label>
+    <input id="decryptLink" type="text" placeholder="Paste shareable link here..." />
+
+    <label for="decryptKey">Decryption key</label>
+    <input id="decryptKey" type="text" placeholder="Paste key here..." />
+
+    <button id="decryptBtn">Decrypt Message</button>
+
+    <div class="decrypted-output">
+      <div class="result-label">Decrypted Message</div>
+      <div id="decryptedMessage" class="result-value"></div>
     </div>
   </div>
 </div>
