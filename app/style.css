@@ -27,6 +27,37 @@ p.subtitle {
   margin-bottom: 24px;
 }
 
+.about-box,
+.message-section,
+.decrypt-section,
+.file-section {
+  margin-top: 24px;
+  background: #f9f9f9;
+  border: 1px solid #d8d8d8;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.about-box {
+  margin-top: 0;
+}
+
+.about-box h2,
+.message-section h2,
+.decrypt-section h2,
+.file-section h2 {
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.about-box p {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+  margin: 0;
+}
+
 label {
   display: block;
   font-size: 13px;
@@ -46,22 +77,14 @@ textarea {
   box-sizing: border-box;
 }
 
-.row {
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.row div {
-  flex: 1;
-}
-
-select {
+input {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 6px;
+  box-sizing: border-box;
+  margin-bottom: 14px;
 }
 
 button {
@@ -135,37 +158,22 @@ button:hover {
   border-radius: 6px;
   padding: 10px;
 }
-.decrypt-section {
-  margin-top: 24px;
-  background: #f9f9f9;
-  border: 1px solid #d8d8d8;
-  border-radius: 8px;
-  padding: 16px;
-}
-
-.decrypt-section h2 {
-  font-size: 15px;
-  margin-bottom: 8px;
-  color: #1a1a1a;
-}
 
 .decrypt-text {
   font-size: 13px;
   color: #666;
   margin-bottom: 14px;
+  line-height: 1.4;
 }
 
-input {
-  width: 100%;
-  padding: 10px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-  margin-bottom: 14px;
-}
-
-.decrypted-output {
-  margin-top: 16px;
+.decrypted-output,
+.result,
+.file-output {
   display: none;
+}
+
+.status-text {
+  font-size: 12px;
+  color: #1a6fc4;
+  margin: 0 0 10px 0;
 }
