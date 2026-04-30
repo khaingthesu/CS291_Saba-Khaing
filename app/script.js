@@ -1,162 +1,272 @@
-// ================= FIREBASE =================
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-    addDoc,
-    collection,
-    doc,
-    getDoc,
-    getFirestore
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCIEnfvJUMjJ1EWd5C2cL5FNRtBaXSHfB0",
-  authDomain: "share-lite-bbb07.firebaseapp.com",
-  projectId: "share-lite-bbb07",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// ================= UI =================
 const messageInput = document.getElementById("message");
-const encryptBtn = document.getElementById("encryptBtn");
-const decryptBtn = document.getElementById("decryptBtn");
-
-const messageKeyOutput = document.getElementById("messageKeyOutput");
+const encryptButton = document.getElementById("encryptBtn");
 const resultBox = document.querySelector(".result");
+const messageKeyOutput = document.getElementById("messageKeyOutput");
+const copyMessageKeyBtn = document.getElementById("copyMessageKeyBtn");
+const messageCopyStatus = document.getElementById("messageCopyStatus");
 
+const encryptedMessageInput = document.getElementById("encryptedMessageInput");
 const decryptKeyInput = document.getElementById("decryptKey");
-const messageIdInput = document.getElementById("messageIdInput");
-const decryptedMessage = document.getElementById("decryptedMessage");
+const decryptButton = document.getElementById("decryptBtn");
 const decryptedOutput = document.querySelector(".decrypted-output");
+const decryptedMessage = document.getElementById("decryptedMessage");
+
+const zipFileInput = document.getElementById("zipFileInput");
+const encryptFileBtn = document.getElementById("encryptFileBtn");
+const encryptedZipInput = document.getElementById("encryptedZipInput");
+const fileDecryptKey = document.getElementById("fileDecryptKey");
+const decryptFileBtn = document.getElementById("decryptFileBtn");
+const fileOutput = document.querySelector(".file-output");
+const fileKeyOutput = document.getElementById("fileKeyOutput");
+const copyFileKeyBtn = document.getElementById("copyFileKeyBtn");
+const fileCopyStatus = document.getElementById("fileCopyStatus");
 
 resultBox.style.display = "none";
 decryptedOutput.style.display = "none";
+fileOutput.style.display = "none";
 
-// ================= ENCRYPT =================
-encryptBtn.addEventListener("click", async () => {
-  const text = messageInput.value.trim();
-  if (!text) return alert("Type a message");
+encryptButton.addEventListener("click", async () => {
+  const message = messageInput.value.trim();
+
+  if (message === "") {
+    alert("Please type a message first.");
+    return;
+  }
 
   try {
-    const key = await generateKey();
+    const key = await generateCryptoKey();
     const exportedKey = await exportKey(key);
-    const encrypted = await encrypt(text, key);
+    const encryptedMessage = await encryptText(message, key);
 
-    const packageData = {
-      iv: encrypted.iv,
-      data: encrypted.data
+    const encryptedPackage = {
+      type: "SecureShare Lite Encrypted Message",
+      iv: encryptedMessage.iv,
+      data: encryptedMessage.data
     };
 
-    // 🔥 CREATE BLOB
-    const blob = new Blob(
-      [JSON.stringify(packageData)],
+    const encryptedBlob = new Blob(
+      [JSON.stringify(encryptedPackage)],
       { type: "text/plain" }
     );
 
-    // 🔥 FORCE DOWNLOAD (RIGHT HERE — no delay after this)
-    download(blob, "encrypted-message.txt");
-
-    // 🔥 AFTER download → Firebase (safe now)
-    await addDoc(collection(db, "encrypted_keys"), {
-      ...packageData,
-      createdAt: Date.now()
-    });
+    downloadBlob(encryptedBlob, "encrypted-message.txt");
 
     messageKeyOutput.textContent = exportedKey;
     resultBox.style.display = "block";
-
-  } catch (err) {
-    console.error(err);
-    alert("Encryption failed");
+  } catch (error) {
+    alert("Something went wrong while encrypting the message.");
+    console.error(error);
   }
 });
-// ================= DECRYPT =================
-decryptBtn.addEventListener("click", async () => {
-  const id = messageIdInput.value.trim();
+
+copyMessageKeyBtn.addEventListener("click", () => {
+  navigator.clipboard.writeText(messageKeyOutput.textContent);
+  messageCopyStatus.textContent = "Message key copied.";
+});
+
+decryptButton.addEventListener("click", async () => {
+  const file = encryptedMessageInput.files[0];
   const key = decryptKeyInput.value.trim();
 
-  if (!id || !key) return alert("Enter ID + key");
+  if (!file || key === "") {
+    alert("Please choose the encrypted message file and enter the key.");
+    return;
+  }
+
+  if (!file.name.toLowerCase().endsWith(".txt")) {
+    alert("Please upload the encrypted .txt message file.");
+    return;
+  }
 
   try {
-    const snap = await getDoc(doc(db, "encrypted_keys", id));
-    if (!snap.exists()) return alert("Message not found");
+    const encryptedText = await file.text();
+    const encryptedPackage = JSON.parse(encryptedText);
 
-    const data = snap.data();
-    const text = await decrypt(data, key);
+    const decryptedText = await decryptText(encryptedPackage, key);
 
-    decryptedMessage.textContent = text;
+    decryptedMessage.textContent = decryptedText;
     decryptedOutput.style.display = "block";
-
-  } catch (err) {
-    console.error(err);
-    alert("Decryption failed");
+  } catch (error) {
+    alert("Wrong key or damaged encrypted message file.");
+    console.error(error);
   }
 });
 
-// ================= CRYPTO =================
-async function generateKey() {
-  return crypto.subtle.generateKey(
-    { name: "AES-GCM", length: 256 },
+encryptFileBtn.addEventListener("click", async () => {
+  const file = zipFileInput.files[0];
+
+  if (!file) {
+    alert("Please choose a ZIP file first.");
+    return;
+  }
+
+  if (!file.name.toLowerCase().endsWith(".zip")) {
+    alert("Only ZIP files are allowed. Please compress your folder into a .zip file first.");
+    return;
+  }
+
+  try {
+    const key = await generateCryptoKey();
+    const exportedKey = await exportKey(key);
+    const fileBuffer = await file.arrayBuffer();
+
+    const encryptedFile = await encryptBuffer(fileBuffer, key);
+
+    const encryptedPackage = {
+      type: "SecureShare Lite Encrypted ZIP",
+      originalFileName: file.name,
+      iv: encryptedFile.iv,
+      data: encryptedFile.data
+    };
+
+    const encryptedBlob = new Blob(
+      [JSON.stringify(encryptedPackage)],
+      { type: "application/json" }
+    );
+
+    downloadBlob(encryptedBlob, file.name + ".encrypted");
+
+    fileKeyOutput.textContent = exportedKey;
+    fileOutput.style.display = "block";
+  } catch (error) {
+    alert("Something went wrong while encrypting the ZIP file.");
+    console.error(error);
+  }
+});
+
+copyFileKeyBtn.addEventListener("click", () => {
+  navigator.clipboard.writeText(fileKeyOutput.textContent);
+  fileCopyStatus.textContent = "File key copied.";
+});
+
+decryptFileBtn.addEventListener("click", async () => {
+  const encryptedFile = encryptedZipInput.files[0];
+  const keyText = fileDecryptKey.value.trim();
+
+  if (!encryptedFile || keyText === "") {
+    alert("Please choose the encrypted ZIP file and enter the file key.");
+    return;
+  }
+
+  try {
+    const encryptedText = await encryptedFile.text();
+    const encryptedPackage = JSON.parse(encryptedText);
+
+    const decryptedBuffer = await decryptBuffer(encryptedPackage, keyText);
+
+    const originalName = encryptedPackage.originalFileName || "decrypted-file.zip";
+    const decryptedBlob = new Blob([decryptedBuffer], { type: "application/zip" });
+
+    downloadBlob(decryptedBlob, originalName);
+  } catch (error) {
+    alert("Wrong file key or damaged encrypted ZIP file.");
+    console.error(error);
+  }
+});
+
+async function generateCryptoKey() {
+  return await window.crypto.subtle.generateKey(
+    {
+      name: "AES-GCM",
+      length: 256
+    },
     true,
     ["encrypt", "decrypt"]
   );
 }
 
-async function encrypt(text, key) {
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const encoded = new TextEncoder().encode(text);
+async function encryptText(text, key) {
+  const encoder = new TextEncoder();
+  const encodedText = encoder.encode(text);
 
-  const encrypted = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
+  return await encryptBuffer(encodedText, key);
+}
+
+async function decryptText(encryptedPackage, base64Key) {
+  const decryptedBuffer = await decryptBuffer(encryptedPackage, base64Key);
+  const decoder = new TextDecoder();
+
+  return decoder.decode(decryptedBuffer);
+}
+
+async function encryptBuffer(buffer, key) {
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
+  const encryptedData = await window.crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv: iv
+    },
     key,
-    encoded
+    buffer
   );
 
   return {
-    iv: toBase64(iv),
-    data: toBase64(encrypted)
+    iv: arrayBufferToBase64(iv),
+    data: arrayBufferToBase64(encryptedData)
   };
 }
 
-async function decrypt(pkg, base64Key) {
-  const key = await crypto.subtle.importKey(
+async function decryptBuffer(encryptedPackage, base64Key) {
+  const keyBuffer = base64ToArrayBuffer(base64Key);
+
+  const key = await window.crypto.subtle.importKey(
     "raw",
-    fromBase64(base64Key),
-    { name: "AES-GCM" },
+    keyBuffer,
+    {
+      name: "AES-GCM"
+    },
     false,
     ["decrypt"]
   );
 
-  const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: fromBase64(pkg.iv) },
-    key,
-    fromBase64(pkg.data)
-  );
+  const iv = base64ToArrayBuffer(encryptedPackage.iv);
+  const data = base64ToArrayBuffer(encryptedPackage.data);
 
-  return new TextDecoder().decode(decrypted);
+  return await window.crypto.subtle.decrypt(
+    {
+      name: "AES-GCM",
+      iv: iv
+    },
+    key,
+    data
+  );
 }
 
 async function exportKey(key) {
-  const raw = await crypto.subtle.exportKey("raw", key);
-  return toBase64(raw);
+  const exported = await window.crypto.subtle.exportKey("raw", key);
+  return arrayBufferToBase64(exported);
 }
 
-// ================= HELPERS =================
-function toBase64(buffer) {
-  return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+
+  return btoa(binary);
 }
 
-function fromBase64(base64) {
-  return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+function base64ToArrayBuffer(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  return bytes;
 }
 
-function download(blob, name) {
+function downloadBlob(blob, fileName) {
   const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = name;
+  const url = URL.createObjectURL(blob);
 
-  document.body.appendChild(link);
+  link.href = url;
+  link.download = fileName;
   link.click();
-  document.body.removeChild(link);
-}
+
+  URL.revokeObjectURL(url);
+} how to edit in this code
