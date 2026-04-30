@@ -269,4 +269,4 @@ function downloadBlob(blob, fileName) {
   link.click();
 
   URL.revokeObjectURL(url);
-} how to edit in this code
+} 
